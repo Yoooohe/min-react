@@ -1,6 +1,5 @@
-import ReactDom from  './core/ReactDom.js';
 import React from './core/React.js';
+import ReactDom from  './core/ReactDom.js';
+import App from "./App.jsx";
 
-const App = React.createElement('div', {id: 'app'}, 'Hello World');
-
-ReactDom.createRoot(document.getElementById('root')).render(App)
+ReactDom.createRoot(document.querySelector('#root')).render(App)
