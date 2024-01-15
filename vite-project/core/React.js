@@ -27,6 +27,7 @@ const render = (el, container) => {
       children: [el]
     }
   }
+  root = nextUnitOfWork;
 }
 
 const createDom = (type) => {
@@ -62,10 +63,23 @@ const initChildren = (fiber) => {
   })
 }
 
+let root = null;
+const commitRoot = () => {
+  commitWork(root.child);
+  root = null;
+}
+
+const commitWork = (fiber) => {
+  if (!fiber) return;
+  fiber.parent.dom.append(fiber.dom);
+  commitWork(fiber.sibling);
+  commitWork(fiber.child);
+}
+
 const performUnitOfWork = (fiber) => {
   if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
-    fiber.parent.dom.append(dom);
+    // fiber.parent.dom.append(dom);
     updateProps(dom, fiber.props);
   }
   initChildren(fiber)
@@ -84,6 +98,9 @@ const workLoop = (deadline) => {
   if (!shouldYield && nextUnitOfWork) {
     shouldYield = deadline.timeRemaining() < 1;
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+  }
+  if (!nextUnitOfWork && root) {
+    commitRoot();
   }
   requestIdleCallback(workLoop);
 }
