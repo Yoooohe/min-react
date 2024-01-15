@@ -14,7 +14,7 @@ const createElement = (type, props, ...children) => {
     type,
     props: {
       ...props,
-      children: children.map(child => typeof child === 'string' ? createTextNode(child) : child)
+      children: children.map(child => typeof child === 'string'  || typeof child === 'number'? createTextNode(child) : child)
     }
   })
 }
@@ -42,13 +42,12 @@ const updateProps = (dom, props) => {
   })
 }
 
-const initChildren = (fiber) => {
-  const children = fiber.props.children;
+const initChildren = (fiber, children) => {
   let prevChild = null;
-  children.forEach((child, index) => {
+  children.forEach((item, index) => {
     const newFiber = {
-      type: child.type,
-      props: child.props,
+      type: item.type,
+      props: item.props,
       parent: fiber,
       sibling: null,
       child: null,
@@ -71,23 +70,46 @@ const commitRoot = () => {
 
 const commitWork = (fiber) => {
   if (!fiber) return;
-  fiber.parent.dom.append(fiber.dom);
+  let fiberParent = fiber.parent;
+  while (!fiberParent.dom) {
+    fiberParent = fiberParent.parent;
+  }
+  if (fiber.dom) {
+    fiberParent.dom.append(fiber.dom);
+  }
   commitWork(fiber.sibling);
   commitWork(fiber.child);
 }
 
-const performUnitOfWork = (fiber) => {
+const updateFunctionComponent = (fiber) => {
+  const children = [fiber.type(fiber.props)];
+  initChildren(fiber, children)
+}
+
+const updateHostComponent = (fiber) => {
   if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
-    // fiber.parent.dom.append(dom);
     updateProps(dom, fiber.props);
   }
-  initChildren(fiber)
+  const children = fiber.props.children;
+  initChildren(fiber, children)
+}
+
+const performUnitOfWork = (fiber) => {
+  const isFunctionComponent = typeof fiber.type === 'function';
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    updateHostComponent(fiber)
+  }
+  // 返回下一个要执行的任务
   if (fiber.child) {
     return fiber.child
   }
-  if (fiber.sibling) {
-    return fiber.sibling
+  let nextFiber = fiber;
+  while(nextFiber) {
+    if (nextFiber.sibling) return nextFiber.sibling;
+    nextFiber = nextFiber.parent;
   }
   return fiber.parent.sibling
 }
