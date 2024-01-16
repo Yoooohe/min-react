@@ -77,8 +77,8 @@ const commitWork = (fiber) => {
   if (fiber.dom) {
     fiberParent.dom.append(fiber.dom);
   }
-  commitWork(fiber.sibling);
   commitWork(fiber.child);
+  commitWork(fiber.sibling);
 }
 
 const updateFunctionComponent = (fiber) => {
