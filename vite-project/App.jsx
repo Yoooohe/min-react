@@ -1,7 +1,20 @@
 import React from "./core/React.js";
 
+let count = 0; // 全局变量
 function Counter({num}) {
-  return <div>{num}</div>
+
+  function handleClick() {
+    count ++;
+    console.log(count);
+    React.update();
+  }
+
+  return (
+    <div>
+      count: {count}
+      <button onClick={handleClick}>click</button>
+    </div>
+  )
 }
 
 // function CounterContainer() {
@@ -16,10 +29,10 @@ function Counter({num}) {
 
 function App() {
   return (
-    <div>
+  <div>
     Hello World
     <Counter num={101}></Counter>
-    <Counter num={100}></Counter>
+    {/* <Counter num={100}></Counter> */}
   </div>
   )
 }
