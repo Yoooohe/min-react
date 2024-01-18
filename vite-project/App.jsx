@@ -1,39 +1,51 @@
 import React from "./core/React.js";
 
-let count = 0; // 全局变量
-function Counter({num}) {
+let showBar = false;
+function Counter() {
+  // const foo = <div>foo</div>
+  // function Foo() {
+  //   return (
+  //     <div>
+  //       foo
+  //       <div>child</div>
+  //     </div>
+  //   )
 
-  function handleClick() {
-    count ++;
-    console.log(count);
+  const foo = (
+    <div>
+      foo
+      <div>child</div>
+    </div>
+  )
+
+  // const bar = <p>bar</p>
+  const bar = <div>bar</div>
+
+
+
+  function toggleBar() {
+    showBar = !showBar;
     React.update();
   }
 
   return (
     <div>
-      count: {count}
-      <button onClick={handleClick}>click</button>
+      Counter
+      {/* <div>{showBar ? bar : <Foo/>}</div> */}
+      {/* <div>{showBar ? bar : foo}</div> */}
+      {showBar && bar}
+
+      <button onClick={toggleBar}>show Bar</button>
     </div>
   )
 }
 
-// function CounterContainer() {
-//   return <Counter></Counter>
-// }
-
-// const App = (
-//   <div>
-//     Hello World
-//     <CounterContainer></CounterContainer>
-//   </div>)
-
 function App() {
   return (
-  <div>
-    Hello World
-    <Counter num={101}></Counter>
-    {/* <Counter num={100}></Counter> */}
-  </div>
+    <div>
+      mini-react
+      <Counter></Counter>
+    </div>
   )
 }
 

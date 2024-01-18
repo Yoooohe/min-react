@@ -103,14 +103,20 @@ const reconcileChildren = (fiber, children) => {
       }
     } else {
       // create
-      newFiber = {
-        type: item.type,
-        props: item.props,
-        parent: fiber,
-        sibling: null,
-        child: null,
-        dom: null,
-        effectTag: 'PLACEMENT',
+      if (item) {
+        newFiber = {
+          type: item.type,
+          props: item.props,
+          parent: fiber,
+          sibling: null,
+          child: null,
+          dom: null,
+          effectTag: 'PLACEMENT',
+        }
+      }
+     
+      if (oldFiber) {
+        deletions.push(oldFiber)
       }
     }
 
@@ -123,18 +129,40 @@ const reconcileChildren = (fiber, children) => {
     } else {
       prevChild.sibling = newFiber;
     }
-    prevChild = newFiber;
+    if (newFiber) {
+      prevChild = newFiber;
+    }
   })
+
+  while (oldFiber) {
+    deletions.push(oldFiber)
+    oldFiber = oldFiber.sibling
+  }
 }
 
 // work in progress root
 let wipRoot = null;
 let currentRoot = null;
+let deletions = [];
 
 const commitRoot = () => {
+  deletions.forEach(commitDeletion);
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
+  deletions = [];
+}
+
+function commitDeletion(fiber) {
+  if (fiber.dom) {
+    let fiberParent = fiber.parent;
+    while(!fiberParent.dom) {
+      fiberParent = fiberParent.parent;
+    }
+    fiberParent.dom.removeChild(fiber.dom);
+  } else {
+    commitDeletion(fiber.child)
+  }
 }
 
 
