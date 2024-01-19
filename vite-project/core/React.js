@@ -190,6 +190,8 @@ const commitWork = (fiber) => {
 }
 
 const updateFunctionComponent = (fiber) => {
+  stateHooks = [];
+  stateHookIndex = 0;
   wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children)
@@ -241,11 +243,48 @@ const workLoop = (deadline) => {
   requestIdleCallback(workLoop);
 }
 
+let stateHooks;
+let stateHookIndex;
+function useState(initial) {
+  let currentFiber = wipFiber;
+
+  const oldHook = currentFiber?.alternate?.stateHooks[stateHookIndex];
+  const stateHook = {
+    state: oldHook ? oldHook.state : initial,
+    queue: oldHook ? oldHook.queue : [],
+  }
+
+  // 在useState被再次调用时，统一更新收集操作
+  stateHook.queue.forEach((action) => {
+    stateHook.state = action(stateHook.state)
+  })
+  stateHook.queue = [];
+
+  stateHookIndex++;
+  stateHooks.push(stateHook)
+  currentFiber.stateHooks = stateHooks;
+
+  function setState(action) {
+    const eagerState = typeof action === 'function' ? action(stateHook.state) : action;
+    if (eagerState === stateHook.state) return;
+
+    stateHook.queue.push(typeof action === 'function' ? action : () => action);
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    }
+    nextUnitOfWork = wipRoot;
+  }
+
+  return [stateHook.state, setState]
+}
+
 requestIdleCallback(workLoop)
 
 const React = {
   render,
   update,
+  useState,
   createElement,
 }
 
