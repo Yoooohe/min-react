@@ -31,12 +31,15 @@ const render = (el, container) => {
 }
 
 const update = () => {
-  wipRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot
+  let currentFiber = wipFiber;
+  return () => {
+    console.log(currentFiber)
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber
+    }
+    nextUnitOfWork = wipRoot;
   }
-  nextUnitOfWork = wipRoot;
 }
 
 const createDom = (type) => {
@@ -144,6 +147,7 @@ const reconcileChildren = (fiber, children) => {
 let wipRoot = null;
 let currentRoot = null;
 let deletions = [];
+let wipFiber = null;
 
 const commitRoot = () => {
   deletions.forEach(commitDeletion);
@@ -186,6 +190,7 @@ const commitWork = (fiber) => {
 }
 
 const updateFunctionComponent = (fiber) => {
+  wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children)
 }
@@ -221,9 +226,14 @@ const performUnitOfWork = (fiber) => {
 let nextUnitOfWork  = null;
 const workLoop = (deadline) => {
   let shouldYield = false;
-  if (!shouldYield && nextUnitOfWork) {
-    shouldYield = deadline.timeRemaining() < 1;
+  while (!shouldYield && nextUnitOfWork) {    
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+
+    if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+      nextUnitOfWork = undefined;
+    }
+
+    shouldYield = deadline.timeRemaining() < 1;
   }
   if (!nextUnitOfWork && wipRoot) {
     commitRoot();

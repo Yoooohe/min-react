@@ -1,52 +1,63 @@
 import React from "./core/React.js";
 
-let showBar = false;
-function Counter() {
-  // const foo = <div>foo</div>
-  // function Foo() {
-  //   return (
-  //     <div>
-  //       foo
-  //       <div>child</div>
-  //     </div>
-  //   )
+let countFoo = 1;
 
-  const foo = (
-    <div>
-      foo
-      <div>child</div>
-    </div>
-  )
+function Foo() {
+  console.log('foo rerun');
 
-  // const bar = <p>bar</p>
-  const bar = <div>bar</div>
-
-
-
-  function toggleBar() {
-    showBar = !showBar;
-    React.update();
+  const update = React.update();
+  function handleClick() {
+    countFoo ++;
+    update();
   }
 
   return (
     <div>
-      Counter
-      {/* <div>{showBar ? bar : <Foo/>}</div> */}
-      {/* <div>{showBar ? bar : foo}</div> */}
-      {showBar && bar}
-
-      <button onClick={toggleBar}>show Bar</button>
+      <h1>foo</h1>
+      {countFoo}
+      <button onClick={handleClick}>click</button>
     </div>
   )
 }
 
-function App() {
+
+let countBar = 1;
+function Bar() {
+  console.log('bar rerun');
+
+  const update = React.update();
+  function handleClick() {
+    countBar ++;
+    update();
+  }
+
   return (
     <div>
-      mini-react
-      <Counter></Counter>
+      <h1>bar</h1>
+      {countBar}
+      <button onClick={handleClick}>click</button>
     </div>
   )
 }
 
-export default App;
+let countRoot = 1;
+function App() {
+  console.log('App rerun');
+
+  const update = React.update();
+  function handleClick() {
+    countRoot ++;
+    update();
+  }
+
+  return (
+    <div>
+      hi-mini-react count: {countRoot}
+      <button onClick={handleClick}>click</button>
+      <Foo></Foo>
+      <Bar></Bar>
+    </div>
+  )
+}
+
+export default App
