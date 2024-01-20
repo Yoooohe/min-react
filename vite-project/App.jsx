@@ -11,6 +11,20 @@ function Foo() {
     setBar('bar')
   }
 
+  React.useEffect(() => {
+    console.log('init')
+    return () => {
+      console.log('cleanup1')
+    }
+  }, [])
+
+  React.useEffect(() => {
+    console.log('update')
+    return () => {
+      console.log('cleanup2')
+    }
+  }, [count])
+
   return (
     <div>
       <div>{count}</div>
